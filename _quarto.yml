@@ -1,0 +1,22 @@
+project:
+  type: website
+  output-dir: docs
+
+website:
+  title: "Puget Sound Trends: 2025"
+  navbar:
+    left:
+      - text: "Introduction"
+        href: index.qmd
+      - text: "Population"
+        href: population.qmd
+      - text: "Transit"
+        href: transit.qmd
+
+format:
+  closeread-html:
+    toc: false
+    cr-style:
+      narrative-background-color-overlay: white
+      section-background-color: white
+    theme: flatly

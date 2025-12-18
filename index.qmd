@@ -1,0 +1,26 @@
+---
+title: "Puget Sound Trends - Index Page"
+format:
+  closeread-html:
+    mainfont: Poppins
+    remove-header-space: true
+    toc: false
+    cr-style:
+      narrative-background-color-overlay: white
+      section-background-color: white
+      narrative-font-family: Poppins
+      narrative-sidebar-width: 1.5fr
+---
+
+```{=html}
+<style>
+/* Reduce vertical space in narrative sections */
+.cr-section .narrative-col .trigger {
+  padding-block: 2svh !important;
+  padding-inline: 1rem !important;
+}
+</style>
+```
+
+# Development of the RTP Project Investments
+Implementing VISION 2050 and the Regional Transportation Plan, PSRC works with all of the region’s transit providers, including the state ferry system, to coordinate planning and provide effective and sustainable transit options for the region. While transit agencies provide critical service to the region, PSRC also coordinates with specialized transportation providers to better serve people with accessibility and mobility needs who may not have full access to transit through the Coordinated Mobility Plan. As the region continues to grow, PSRC will ensure to plan for a more convenient, flexible, and safe transit network for all communities in the region.  

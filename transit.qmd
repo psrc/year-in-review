@@ -1,0 +1,155 @@
+---
+title: "Puget Sound Trends - Transit Page"
+format:
+  closeread-html:
+    mainfont: Poppins
+    remove-header-space: true
+    toc: false
+    cr-style:
+      narrative-background-color-overlay: white
+      section-background-color: white
+      narrative-font-family: Poppins
+      narrative-sidebar-width: 1.5fr
+---
+
+```{=html}
+<style>
+/* Reduce vertical space in narrative sections */
+.cr-section .narrative-col .trigger {
+  padding-block: 2svh !important;
+  padding-inline: 1rem !important;
+}
+</style>
+```
+
+
+```{r setup, include=FALSE}
+library(leaflet)
+library(sf)
+library(dplyr)
+library(stringr)
+library(htmlwidgets)
+library(units)
+
+wgs84 <- 4326
+gtfs_year <- 2050
+
+un <- Sys.getenv("USERNAME")
+data_dir <- file.path("C:/Users",str_to_lower(un),"Puget Sound Regional Council/GIS - Sharing/Projects/Transportation/RTP_2026", "transit", paste0("Transit_Network_", gtfs_year, ".gdb"))
+
+transit_layer_data <- st_read(dsn = data_dir, layer = paste0("transit_routes_", gtfs_year)) |>
+  st_transform(wgs84)
+
+create_route_map <- function(lyr=transit_layer_data, zm=8.5, longitude=-122.257) {
+
+  brt <- lyr |> filter(route_type %in% c(5))
+  crt <- lyr |> filter(route_type %in% c(2))
+  lrt <- lyr |> filter(route_type %in% c(0,1))
+  fry <- lyr |> filter(route_type %in% c(4))
+  bus <- lyr |> filter(route_type %in% c(3))
+
+  brt_lbl <- paste0("<b>", "Route Name: ", "</b>", brt$short_name) |> lapply(htmltools::HTML)
+  crt_lbl <- paste0("<b>", "Route Name: ", "</b>", crt$short_name) |> lapply(htmltools::HTML)
+  lrt_lbl <- paste0("<b>", "Route Name: ", "</b>", lrt$short_name) |> lapply(htmltools::HTML)
+  fry_lbl <- paste0("<b>", "Route Name: ", "</b>", fry$short_name) |> lapply(htmltools::HTML)
+  bus_lbl <- paste0("<b>", "Route Name: ", "</b>", bus$short_name) |> lapply(htmltools::HTML)
+
+  leaflet() |>
+    addTiles(group = "Open Street Map") |>
+    
+    addProviderTiles(providers$CartoDB.Positron, group = "Positron (minimal)") |>
+    
+    addProviderTiles(providers$Esri.WorldImagery, group = "Satellite") |>
+   
+     addLayersControl(baseGroups = c("Positron (minimal)", "Open Street Map", "Satellite"),
+                     overlayGroups = c("BRT", "Commuter Rail", "Light Rail", "Ferry", "Bus"),
+                     options = layersControlOptions(collapsed = TRUE)) |>
+    
+    addEasyButton(easyButton(
+      icon="fa-globe", title="Region",
+      onClick=JS("function(btn, map){map.setView([47.615,-122.257],8.5); }"))) |>
+    
+    addPolylines(data = bus, color = "#BCBEC0", weight = 2, fillColor = "#BCBEC0", group = "Bus", label = bus_lbl) |>
+    
+    addPolylines(data = brt, color = "#91268F", weight = 4, fillColor = "#91268F", group = "BRT", label = brt_lbl) |>
+    
+    addPolylines(data = crt, color = "#8CC63E", weight = 4, fillColor = "#8CC63E", group = "Commuter Rail", label = crt_lbl) |>
+    
+    addPolylines(data = lrt, color = "#F05A28", weight = 4, fillColor = "#F05A28", group = "Light Rail", label = lrt_lbl) |>
+    
+    addPolylines(data = fry, color = "#40BDB8", weight = 4, fillColor = "#40BDB8", group = "Ferry", label = fry_lbl) |>
+
+    setView(lng = longitude, lat = 47.615, zoom = zm) |>
+    
+    addLegend(colors=c("#91268F", "#8CC63E", "#F05A28", "#40BDB8", "#BCBEC0"),
+              labels=c("BRT", "Commuter Rail", "Light Rail", "Ferry", "Bus"),
+              position = "bottomleft")
+}
+
+region_route_map <- create_route_map()
+downtown_route_map <- create_route_map(longitude=-122.357, zm=12)
+st_route_map <- create_route_map(lyr = transit_layer_data |> filter(agency_id == 6))
+
+st_network_summary <- transit_layer_data |> 
+  mutate(len = as.numeric(set_units(st_length(transit_layer_data), "mi"))) |>
+  st_drop_geometry() |>
+  filter(agency_id == 6) |>
+  group_by(short_name, route_type) |>
+  summarise(max_length = max(len), total_length = sum(len)) |>
+  as_tibble() |>
+  mutate(two_way = max_length * 2) |>
+  mutate(routes = 1) |>
+  group_by(route_type) |>
+  summarise(routes = sum(routes), miles = round(sum(two_way),0)) |>
+  as_tibble()
+
+```
+
+:::{.cr-section layout="sidebar-left"}
+# Transit Network
+The transit network is a focal point for the region's long-term growth strategy which envisions **65%** of population growth and **75%** of job growth will occur near high-capacity transit stations or in Regional Growth Centers. Eight agencies are responsible for providing public transportation in the Central Puget sound region: @cr-region  
+
+- <a href="https://www.communitytransit.org/" target="_blank">Community Transit</a>  
+- <a href="https://everetttransit.org/" target="_blank">Everett Transit</a>   
+- <a href="https://kingcounty.gov/en/dept/metro" target="_blank">King County Metro</a>  
+- <a href="https://www.kitsaptransit.com/" target="_blank">Kitsap Transit</a>  
+- <a href="https://www.piercecountywa.gov/1793/Ferry" target="_blank">Pierce County Ferries</a>  
+- <a href="https://piercetransit.org/" target="_blank">Pierce Transit</a>   
+- <a href="https://www.soundtransit.org/" target="_blank">Sound Transit</a>   
+- <a href="https://wsdot.wa.gov/travel/washington-state-ferries/" target="_blank">Washington State Ferries</a>  
+
+Each transit agency has developed a long-range transit plan that is the basis for all public transportation projects in the RTP. Agencies are responsible for identifying the network of investments that should be pursued in the long-range plan along with the revenue-service hours necessary to operate that level of transit service. Each transit agency provides PSRC with a representation of the future planned networks via general transit feed specification (GTFS) files that are submitted for inclusion into the RTP.  
+
+The RTP transit investments are separated into two categories: **Regional** and **Local** transit
+
+## Regional Transit 
+Sound Transit builds and operates the regional transit system in the Central Puget Sound region. Sound Transit has a financial plan that supports the capital construction and maintenance and operation of the regional transit system out to the horizon year of the RTP. @cr-st  
+
+The regional transit network consists of four distinct public transportation services:  
+
+- **Light Rail**
+  - 5 routes spanning 276 miles
+- **Commuter Rail** 
+  - 2 routes spanning 180 miles
+- **Bus Rapid Transit**
+  - 3 routes spanning 99 miles
+- **Regional Express Bus**
+  - 9 routes spanning 389 miles
+
+Downtown Seattle served by all modes of public transportation. Seven (7) agencies provide public transportation in the region across more than 300 different transit routes. Downtown Seattle served by all modes of public transportation. Seven (7) agencies provide public transportation in the region across more than 300 different transit routes. Downtown Seattle served by all modes of public transportation. Seven (7) agencies provide public transportation in the region across more than 300 different transit routes. 
+
+:::{#cr-region}
+<div id="region-transit-map" style="width: 600px; position: sticky; margin-top: 0; padding-top: 0;"></div>
+```{r, results='asis'}
+region_route_map
+```
+:::
+
+:::{#cr-st}
+<div id="st-transit-map" style="width: 600px; position: sticky; margin-top: 0; padding-top: 0;"></div>
+```{r, results='asis'}
+st_route_map
+```
+:::
+
+:::
