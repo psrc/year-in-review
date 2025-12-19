@@ -22,5 +22,123 @@ format:
 </style>
 ```
 
-# Population Growth
-Implementing VISION 2050 and the Regional Transportation Plan, PSRC works with all of the region’s transit providers, including the state ferry system, to coordinate planning and provide effective and sustainable transit options for the region. While transit agencies provide critical service to the region, PSRC also coordinates with specialized transportation providers to better serve people with accessibility and mobility needs who may not have full access to transit through the Coordinated Mobility Plan. As the region continues to grow, PSRC will ensure to plan for a more convenient, flexible, and safe transit network for all communities in the region.  
+```{r setup, include=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(plotly)
+library(scales)
+
+psrc_infogram_style <- function() {
+  font <- "Poppins"
+  
+  ggplot2::theme(
+    
+    #Text format:
+    #This sets the font, size, type and color of text for the chart's title
+    plot.title = ggplot2::element_text(family=font,
+                                       face="bold",
+                                       size=16, 
+                                       color='black'),
+    plot.title.position = "plot",
+    
+    #This sets the font, size, type and color of text for the chart's subtitle, as well as setting a margin between the title and the subtitle
+    plot.subtitle = ggplot2::element_text(family=font,
+                                          color='black',
+                                          size=14,
+                                          margin=ggplot2::margin(9,0,9,0)),
+    
+    #This sets the caption text element
+    plot.caption =  ggplot2::element_text(family=font,
+                                          size=12,
+                                          face="plain",
+                                          color='black',
+                                          hjust=0),
+    plot.caption.position = "plot",
+    
+    #Legend format
+    #This sets the position and alignment of the legend, removes a title and background for it and sets the requirements for any text within the legend.
+    legend.position = "bottom",
+    legend.background = ggplot2::element_blank(),
+    legend.title = ggplot2::element_blank(),
+    legend.key = ggplot2::element_blank(),
+    legend.text = ggplot2::element_text(family=font,
+                                        size=14,
+                                        color="black"),
+    
+    #Axis format
+    #This sets the text font, size and colour for the axis test, as well as setting the margins and removes lines and ticks. In some cases, axis lines and axis ticks are things we would want to have in the chart - the cookbook shows examples of how to do so.
+    axis.title.x = ggplot2::element_blank(),
+    axis.title.y = ggplot2::element_blank(),
+    axis.text = ggplot2::element_text(family=font, size=12, color="black"),
+    axis.text.x = ggplot2::element_text(margin=ggplot2::margin(5, b = 10)),
+    axis.ticks = ggplot2::element_blank(),
+    axis.line = ggplot2::element_blank(),
+    
+    #Grid lines
+    #This removes all minor gridlines and adds major y gridlines. In many cases you will want to change this to remove y gridlines and add x gridlines.
+    panel.grid.minor = ggplot2::element_blank(),
+    panel.grid.major.y = ggplot2::element_line(linewidth = 0.2, color="#BCBEC0"),
+    panel.grid.major.x = ggplot2::element_line(linewidth = 0.2, color="#BCBEC0"),
+    
+    #Blank background
+    #This sets the panel background as blank, removing the standard grey ggplot background color from the plot
+    panel.background = ggplot2::element_blank(),
+    
+    
+  )
+}
+
+psrc_line_chart <- function(df, x, y, fill, lwidth=1, colors, ymin =0, ymax = 1, labels=scales::label_comma(), dec=0, breaks=NULL, title=NULL, source=NULL, legend = TRUE, chart_style=psrc_infogram_style()) {
+  
+  c <- ggplot(data=df,
+              aes(x=.data[[x]],
+                  y=.data[[y]],
+                  group=.data[[fill]],
+                  color=.data[[fill]],
+                  text = paste0(.data[[fill]], ": ", format(round(.data[[y]], dec), nsmall=0, big.mark=","))))  + 
+    geom_line(linewidth=lwidth, linejoin = "round", na.rm=TRUE) +
+    geom_point(fill = "white", shape = 21, stroke = 0.5) +
+    scale_color_manual(values = colors)  +
+    scale_y_continuous(labels = labels, limits = c(ymin, ymax))  +   
+    labs(title=title, caption=source) +
+    scale_x_continuous(n.breaks=breaks) +
+    chart_style
+  
+  return(c)
+  
+}
+
+psrc_make_interactive <- function(plot_obj, legend=FALSE, hover=y) {
+  
+  c <- plotly::ggplotly(plot_obj, tooltip = "text")
+  
+  c <- plotly::layout(c,
+                      showlegend = legend,
+                      legend=list(orientation="h", xanchor="center", xref="container", x=0.5, y=-0.10,         
+                                  title="", font=list(family="Poppins", size=20, color="black"),
+                                  pad=list(b=50, t=50)),
+                      hoverlabel = list(bgcolor = "#EDF9FF", font = list(size=16, color = "#2F3030", face="bold"))
+                      )
+  
+  return(c)
+  
+}
+
+df <- readRDS("data/regional_population.rds")
+
+region_population_chart <- psrc_make_interactive(psrc_line_chart(df = df, x = "Year", y = "Estimate", fill = "Variable", colors = c("#91268F", "#8CC63E"), ymin = 3000000, ymax = 5000000, dec = -2), legend = TRUE)
+
+```
+
+:::{.cr-section layout="sidebar-left"}
+# Population
+The region surpassed **4.5 million** people in 2025, grwoing by over **50,000** residents in the past year. @cr-pop-region  
+
+Each county has continued to grow..  
+
+:::{#cr-pop-region}
+<div id="region-population-map" style="width: 600px; position: sticky; margin-top: 0; padding-top: 0;"></div>
+```{r, results='asis'}
+region_population_chart
+```
+:::
