@@ -5,6 +5,7 @@ format:
     mainfont: Poppins
     remove-header-space: true
     toc: false
+    self-contained: false
     cr-style:
       narrative-background-color-overlay: white
       section-background-color: white

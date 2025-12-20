@@ -4,6 +4,7 @@ format:
   closeread-html:
     mainfont: Poppins
     remove-header-space: true
+    self-contained: false
     toc: false
     cr-style:
       narrative-background-color-overlay: white
@@ -114,6 +115,8 @@ psrc_make_interactive <- function(plot_obj, legend=FALSE, hover=y) {
   c <- plotly::ggplotly(plot_obj, tooltip = "text")
   
   c <- plotly::layout(c,
+                      autosize = TRUE,
+                      height = 450,
                       showlegend = legend,
                       legend=list(orientation="h", xanchor="center", xref="container", x=0.5, y=-0.10,         
                                   title="", font=list(family="Poppins", size=20, color="black"),
@@ -143,20 +146,34 @@ The region surpassed **4.5 million** people in 2025, growing by over **50,000** 
 
 {{< lipsum 1 >}}
 
+:::{#cr-pop-region}
+
+<div id="region-population-map" style="width: 600px; position: sticky; margin-top: 0; padding-top: 0;"></div>
+```{r show_region_pop_chart}
+region_population_chart
+```
+
+:::
+
+:::
+
+:::{.cr-section layout="sidebar-left"}
+# Regional Gepgraphy
 Each county has continued to grow and since 2018, the region has grown by more than **450,000** people. A majority of the growth in the past seven years has occurred in the region's Metropolitan and Core cities, accounting for more than **56%** of the region's populatin growth since 2018. @cr-pop-regional-geography
 
 {{< lipsum 1 >}}
 
-:::{#cr-pop-region}
-<div id="region-population-map" style="width: 600px; position: sticky; margin-top: 0; padding-top: 0;"></div>
-```{r, results='asis'}
-region_population_chart
-```
-:::
-
 :::{#cr-pop-regional-geography}
 <div id="region-geography-population-map" style="width: 600px; position: sticky; margin-top: 0; padding-top: 0;"></div>
-```{r, results='asis'}
+```{r show_regional_geography_pop_chart}
 regional_geography_chart
 ```
+
 :::
+
+:::
+
+
+
+
+
