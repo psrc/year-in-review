@@ -1,5 +1,5 @@
 ---
-title: "Puget SOund Trends - Population Page"
+title: "Puget Sound Trends - Population Page"
 format:
   closeread-html:
     mainfont: Poppins
@@ -26,6 +26,7 @@ format:
 library(tidyverse)
 library(ggplot2)
 library(plotly)
+library(treemapify)
 library(scales)
 
 psrc_infogram_style <- function() {
@@ -124,21 +125,38 @@ psrc_make_interactive <- function(plot_obj, legend=FALSE, hover=y) {
   
 }
 
-df <- readRDS("data/regional_population.rds")
+# Regional Population
+df <- readRDS("data/regional_population.rds") 
 
 region_population_chart <- psrc_make_interactive(psrc_line_chart(df = df, x = "Year", y = "Estimate", fill = "Variable", colors = c("#91268F", "#8CC63E"), ymin = 3000000, ymax = 5000000, dec = -2), legend = TRUE)
+
+# Population Growth by Regional Geography: 2018 to 2025
+df <- readRDS("data/regional_geography_population_growth.rds")
+
+regional_geography_chart <- ggplot(df, aes(area = Change, fill = Geography, label = paste0(Geography, ": ", format(round(Change, -1), nsmall=0, big.mark=",")))) + geom_treemap(colour = "white", size = 1)  + theme(legend.position = "none") + scale_fill_manual(values = c("Metropolitan Cities" = "#91268F", "Core Cities" = "#F05A28", "High Capacity Transit Community" = "#8CC63E", "Cities & Towns" = "#00A7A0", "Unincorporated" = "#76787A")) + geom_treemap_text(fontface = "bold", place = "centre", size = 14, colour = "white") 
 
 ```
 
 :::{.cr-section layout="sidebar-left"}
 # Population
-The region surpassed **4.5 million** people in 2025, grwoing by over **50,000** residents in the past year. @cr-pop-region  
+The region surpassed **4.5 million** people in 2025, growing by over **50,000** residents in the past year. Regionwide population growth has continued to grow at levels similar to those forecasted during the adoption of VISION 2050. Despite a global pandemic and current changes in economic activity, the region continues to grow as planned.  @cr-pop-region  
 
-Each county has continued to grow..  
+{{< lipsum 1 >}}
+
+Each county has continued to grow and since 2018, the region has grown by more than **450,000** people. A majority of the growth in the past seven years has occurred in the region's Metropolitan and Core cities, accounting for more than **56%** of the region's populatin growth since 2018. @cr-pop-regional-geography
+
+{{< lipsum 1 >}}
 
 :::{#cr-pop-region}
 <div id="region-population-map" style="width: 600px; position: sticky; margin-top: 0; padding-top: 0;"></div>
 ```{r, results='asis'}
 region_population_chart
+```
+:::
+
+:::{#cr-pop-regional-geography}
+<div id="region-geography-population-map" style="width: 600px; position: sticky; margin-top: 0; padding-top: 0;"></div>
+```{r, results='asis'}
+regional_geography_chart
 ```
 :::

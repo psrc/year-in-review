@@ -68,7 +68,8 @@ r <- population_regional_geography |>
 
 population_regional_geography <- population_regional_geography |>
     mutate(Share = Change / r) |>
-    select("Geography", "Change", "Share", "Year")
+    select("Geography", "Change", "Share", "Year") |>
+    filter(Geography != "Region")
 
 rm(r)
 
@@ -149,4 +150,7 @@ for (y in c(first_vision_year, current_acs_year)) {
 }
 
 rm(y)
+population_by_race <- population_by_race |>
+    filter(Race != "Region")
+
 saveRDS(population_by_race, "data/regional_population_by_race.rds")
